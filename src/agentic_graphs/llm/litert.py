@@ -63,12 +63,35 @@ class LiteRTLLM(LLM):
             return self._inference.generate_response(prompt)
 
         output = await asyncio.to_thread(_run)
-        return {"role": "assistant", "content": output}
+        result: Message = {"role": "assistant", "content": output}
+
+        # LiteRT doesn't provide token counts from inference engine,
+        # but we estimate based on prompt + completion lengths
+        prompt_tokens = len(prompt.split())
+        completion_tokens = len(output.split()) if output else 0
+        result["usage"] = {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": prompt_tokens + completion_tokens,
+        }
+
+        return result
 
     async def generate_stream(
         self,
         messages: list[Message],
         tools: list[dict] | None = None,
     ) -> AsyncIterator[Chunk]:
+        # For streaming, we generate the full response and stream it in chunks
         msg = await self.generate(messages, tools)
-        yield {"content": msg.get("content") or "", "done": True}
+        content = msg.get("content") or ""
+        usage = msg.get("usage", {})
+
+        # Stream content in reasonable chunks
+        chunk_size = 50
+        for i in range(0, len(content), chunk_size):
+            chunk = content[i : i + chunk_size]
+            yield {"content": chunk, "done": False}
+
+        # Final chunk with usage metadata
+        yield {"content": "", "done": True, "usage": usage}
