@@ -16,7 +16,6 @@ Usage:
 """
 
 import asyncio
-import json
 import sys
 
 from agentic_graphs.core.falkordb_backend import FalkorDBBackend
@@ -171,8 +170,8 @@ def _check_falkordb(backend) -> bool:
         print(f"  {C.red}\u2717 FalkorDB unreachable{C.reset}")
         print(f"  {C.dim}Error: {exc}{C.reset}")
         print(f"\n  {C.yellow}Make sure FalkorDB is running:{C.reset}")
-        print(f"    docker run -d -p 6379:6379 -p 3000:3000 "
-              f"--name falkordb falkordb/falkordb:latest")
+        print("    docker run -d -p 6379:6379 -p 3000:3000 "
+              "--name falkordb falkordb/falkordb:latest")
         print(f"  {C.yellow}Then open http://localhost:3000 in your browser.{C.reset}")
         return False
 
@@ -266,7 +265,11 @@ async def main():
                 except Exception as exc:
                     graph = project_graph  # fall back to project graph
                     if graph is None:
-                        print(f"    {C.red}(failed to load execution graph {turn.graph_name}: {exc}){C.reset}")
+                        failed_msg = (
+                            f"    {C.red}(failed to load execution graph {turn.graph_name}: {exc})"
+                            f"{C.reset}"
+                        )
+                        print(failed_msg)
             else:
                 graph = project_graph
 

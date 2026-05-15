@@ -5,7 +5,7 @@ Usage:
     uv run python -m agentic_graphs.examples.deep_memory_test
 """
 
-import asyncio, json, sys
+import asyncio
 
 from agentic_graphs import Agent, OpenAILLM, tool
 from agentic_graphs.core.falkordb_backend import FalkorDBBackend
@@ -128,7 +128,7 @@ async def main():
     r = fg.query("MATCH (s:Skill) RETURN s._name, s._description, s._procedure")
     total += 1
     has_skill = len(r.result_set) > 0
-    passed += _verify(backend, f"At least one Skill node stored", has_skill)
+    passed += _verify(backend, "At least one Skill node stored", has_skill)
     for row in r.result_set:
         print(f"    Skill: {row[0]}")
     if not has_skill:

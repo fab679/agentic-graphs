@@ -206,7 +206,8 @@ class FalkorDBBackend:
         g = Graph()
 
         result = self._read(
-            "MATCH (n) RETURN id(n), labels(n), n.id, n.label, n.state, n.output, n.created_at, n.props",
+            "MATCH (n) RETURN id(n), labels(n), n.id, "
+            "n.label, n.state, n.output, n.created_at, n.props",
             graph_name,
         )
         for row in result.result_set:
@@ -476,7 +477,6 @@ class FalkorDBBackend:
         """Query triplets with None as wildcard for any field."""
         gname = self._memory_graph(user_id)
         clauses = []
-        params = []
         if subject is not None:
             clauses.append(f"s._name = {_cypher_val(subject)}")
         if object_ is not None:

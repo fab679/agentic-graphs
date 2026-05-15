@@ -16,7 +16,7 @@ import asyncio
 import logging
 import sys
 
-from agentic_graphs import Agent, OpenAILLM, tool, NT
+from agentic_graphs import Agent, OpenAILLM, tool
 from agentic_graphs.core.falkordb_backend import FalkorDBBackend
 from agentic_graphs.session import Session
 

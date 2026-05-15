@@ -9,7 +9,9 @@ Usage:
     uv run python -m agentic_graphs.examples.skill_learning_demo
 """
 
-import asyncio, logging, sys
+import asyncio
+import logging
+import sys
 
 from agentic_graphs import Agent, OpenAILLM, tool
 from agentic_graphs.core.falkordb_backend import FalkorDBBackend

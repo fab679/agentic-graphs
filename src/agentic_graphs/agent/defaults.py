@@ -201,7 +201,7 @@ def make_mutation_tools(
         graph.resolve(focal_id, output)
         if on_node_added:
             on_node_added(graph.nodes[focal_id])
-        return f"Node resolved."
+        return "Node resolved."
 
     impls: dict[str, Callable] = {
         "create_task": create_task,

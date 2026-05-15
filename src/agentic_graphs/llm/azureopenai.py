@@ -32,10 +32,13 @@ class AzureOpenAILLM(LLM):
         timeout: float = 120.0,
     ):
         self.model = deployment or os.environ.get("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
+        api_version_value = api_version or os.environ.get(
+            "AZURE_OPENAI_API_VERSION", "2024-12-01-preview"
+        )
         self._client = AsyncAzureOpenAI(
             api_key=api_key or os.environ.get("AZURE_OPENAI_API_KEY"),
             azure_endpoint=endpoint or os.environ.get("AZURE_OPENAI_ENDPOINT", ""),
-            api_version=api_version or os.environ.get("AZURE_OPENAI_API_VERSION", "2024-12-01-preview"),
+            api_version=api_version_value,
             timeout=timeout,
         )
 

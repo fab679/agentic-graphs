@@ -143,10 +143,12 @@ class AnthropicLLM(LLM):
 
         # Capture usage if available
         if hasattr(response, 'usage') and response.usage:
+            input_tokens = getattr(response.usage, 'input_tokens', 0)
+            output_tokens = getattr(response.usage, 'output_tokens', 0)
             result["usage"] = {
-                "prompt_tokens": getattr(response.usage, 'input_tokens', 0),
-                "completion_tokens": getattr(response.usage, 'output_tokens', 0),
-                "total_tokens": getattr(response.usage, 'input_tokens', 0) + getattr(response.usage, 'output_tokens', 0),
+                "prompt_tokens": input_tokens,
+                "completion_tokens": output_tokens,
+                "total_tokens": input_tokens + output_tokens,
             }
 
         return result

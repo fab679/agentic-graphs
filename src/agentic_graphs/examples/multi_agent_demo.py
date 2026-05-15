@@ -15,16 +15,21 @@ import sys
 
 from agentic_graphs import Agent, OpenAILLM, tool
 from agentic_graphs.core.falkordb_backend import FalkorDBBackend
-from agentic_graphs.agent.defaults import make_mutation_tools, default_build_tools, default_build_prompt
+from agentic_graphs.agent.defaults import default_build_tools, default_build_prompt
 from agentic_graphs.session import Session
 
 
 # -- colored logging ---------------------------------------------------------
 
 class _Color:
-    cyan = "\033[36m"; yellow = "\033[33m"; green = "\033[32m"
-    magenta = "\033[35m"; red = "\033[91m"; bold = "\033[1m"
-    dim = "\033[2m"; reset = "\033[0m"
+    cyan = "\033[36m"
+    yellow = "\033[33m"
+    green = "\033[32m"
+    magenta = "\033[35m"
+    red = "\033[91m"
+    bold = "\033[1m"
+    dim = "\033[2m"
+    reset = "\033[0m"
 
 class _LogFormatter(logging.Formatter):
     def format(self, record):
@@ -185,7 +190,7 @@ async def run_demo():
     if backend:
         backend.sync(agent.graph, agent.graph_name)
         print(f"  Graph: {agent.graph_name}  ({len(agent.graph.nodes)} nodes)")
-        print(f"  http://localhost:3000")
+        print("  http://localhost:3000")
 
 
 async def run_chat():

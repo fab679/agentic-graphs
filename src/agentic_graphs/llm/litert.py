@@ -5,7 +5,6 @@ Wraps the existing litert_agent.py pattern into the standard LLM interface.
 
 from __future__ import annotations
 
-import json
 import os
 from typing import AsyncIterator
 

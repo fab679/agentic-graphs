@@ -10,7 +10,6 @@ from agentic_graphs.llm.base import LLM, Message, Chunk
 
 try:
     import google.generativeai as genai
-    from google.generativeai.types import content_types
 except ImportError as exc:
     raise ImportError(
         "Install the Google AI SDK: pip install google-generativeai"

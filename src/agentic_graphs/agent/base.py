@@ -433,14 +433,28 @@ class Agent:
                 return f"Skill '{name}' activated. {skill['description']}"
 
             for fn_def in [
-                ("store_triplet",
-                 "Store a fact as subject -[predicate]-> object. Use this when you learn something.",
-                 {"subject": "the subject/entity", "predicate": "the relationship", "object_": "the object/entity"}),
-                ("query_triplets",
-                 "Find triplets. Leave fields empty to use as wildcard.",
-                 {"subject": "", "predicate": "", "object_": ""}),
-                ("search_memory",
-                 "Semantic search across all stored knowledge.",
+                (
+                    "store_triplet",
+                    "Store a fact as subject -[predicate]-> object. "
+                    "Use this when you learn something.",
+                    {
+                        "subject": "the subject/entity",
+                        "predicate": "the relationship",
+                        "object_": "the object/entity",
+                    },
+                ),
+                (
+                    "query_triplets",
+                    "Find triplets. Leave fields empty to use as wildcard.",
+                    {
+                        "subject": "",
+                        "predicate": "",
+                        "object_": "",
+                    },
+                ),
+                (
+                    "search_memory",
+                    "Semantic search across all stored knowledge.",
                  {"query": "natural language query"}),
                 ("get_entity_graph",
                  "Get all triplets connected to an entity.",
@@ -513,7 +527,17 @@ class Agent:
             usage = node.props.get("_usage", {})
             if not usage:
                 return "[no token usage recorded yet]"
-            return f"Prompt tokens: {usage.get('prompt_tokens', 0)}, Completion tokens: {usage.get('completion_tokens', 0)}, Total tokens: {usage.get('total_tokens', 0)}"
+            prompt_tokens = usage.get("prompt_tokens", 0)
+            completion_tokens = usage.get("completion_tokens", 0)
+            total_tokens = usage.get("total_tokens", 0)
+            return (
+                "Prompt tokens: "
+                f"{prompt_tokens}, "
+                "Completion tokens: "
+                f"{completion_tokens}, "
+                "Total tokens: "
+                f"{total_tokens}"
+            )
         impls["get_token_usage"] = _get_token_usage
 
         return schemas, impls
@@ -647,19 +671,21 @@ class Agent:
                 response = await self._generate_streamed(messages, tool_schemas)
             else:
                 response = await self.llm.generate(messages, tools=tool_schemas or None)
-            messages.append(response)
 
-            # Accumulate usage if present
+            # Accumulate usage if present (extract before adding to messages)
             if response.get("usage"):
                 usage = response["usage"]
                 total_usage["prompt_tokens"] += usage.get("prompt_tokens", 0)
                 total_usage["completion_tokens"] += usage.get("completion_tokens", 0)
                 total_usage["total_tokens"] += usage.get("total_tokens", 0)
-            if self.on_token:
-                response = await self._generate_streamed(messages, tool_schemas)
-            else:
-                response = await self.llm.generate(messages, tools=tool_schemas or None)
-            messages.append(response)
+
+            # Append to messages (without usage key — it's client-side only)
+            msg_to_append: Message = {"role": response.get("role", "assistant")}
+            if response.get("content"):
+                msg_to_append["content"] = response["content"]
+            if response.get("tool_calls"):
+                msg_to_append["tool_calls"] = response["tool_calls"]
+            messages.append(msg_to_append)
 
             tool_calls = response.get("tool_calls") or []
             if not tool_calls:
@@ -671,7 +697,10 @@ class Agent:
             for tc in tool_calls:
                 fn = tc["function"]["name"]
                 if fn.startswith("subagent_") and fn in _called_subagents:
-                    tc["function"]["arguments"] = '{"task": "[already called — use previous result]"}'
+                    tc["function"]["arguments"] = (
+                        '{"task": "[already called — '
+                        'use previous result]"}'
+                    )
                     tc["function"]["name"] = "_noop"
                 else:
                     if fn.startswith("subagent_"):

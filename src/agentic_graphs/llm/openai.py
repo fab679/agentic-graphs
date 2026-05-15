@@ -1,6 +1,6 @@
 """OpenAI provider — implements the LLM interface with streaming."""
 
-import json, os
+import os
 from typing import AsyncIterator
 
 from openai import AsyncOpenAI
@@ -100,15 +100,12 @@ class OpenAILLM(LLM):
         )
 
         tool_call_index: dict[int, dict] = {}
-        finish_reason = None
         last_event = None
 
         async for event in stream:
             last_event = event
             delta = event.choices[0].delta if event.choices else None
-            finish = event.choices[0].finish_reason if event.choices else None
-            if finish:
-                finish_reason = finish
+            _ = event.choices[0].finish_reason if event.choices else None
 
             if delta is None:
                 continue
@@ -129,9 +126,13 @@ class OpenAILLM(LLM):
                         tool_call_index[idx]["id"] = tc_delta.id
                     if tc_delta.function:
                         if tc_delta.function.name:
-                            tool_call_index[idx]["function"]["name"] = tc_delta.function.name
+                            tool_call_index[idx]["function"]["name"] = (
+                                tc_delta.function.name
+                            )
                         if tc_delta.function.arguments:
-                            tool_call_index[idx]["function"]["arguments"] += tc_delta.function.arguments
+                            tool_call_index[idx]["function"]["arguments"] += (
+                                tc_delta.function.arguments
+                            )
 
         content = ""
         tcs = list(tool_call_index.values()) if tool_call_index else None

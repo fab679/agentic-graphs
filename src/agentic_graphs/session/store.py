@@ -23,7 +23,6 @@ from __future__ import annotations
 import json
 import logging
 import time
-from typing import Optional
 
 from agentic_graphs.core.falkordb_backend import FalkorDBBackend, _cypher_val
 from agentic_graphs.session.models import Thread, Turn, TurnStatus, _uid
@@ -150,7 +149,6 @@ class ThreadStore:
         for gname in all_graphs:
             if not gname.startswith(_META_PREFIX):
                 continue
-            tid = gname[len(_META_PREFIX):]
             try:
                 cypher = (
                     "MATCH (t:THREAD) RETURN t.id, t.name, t.user_id, t.created_at"

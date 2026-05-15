@@ -130,9 +130,14 @@ class Graph:
                         continue
                     # Don't follow PART_OF from a GOAL to its parent —
                     # prevents scope bleed between sibling subagents.
-                    if (e.type == ET.PART_OF
-                            and self.nodes.get(x, Node('','',label='',state=S.PENDING)).type == NT.GOAL
-                            and e.src == x):
+                    node_type = self.nodes.get(
+                        x, Node('', '', label='', state=S.PENDING)
+                    ).type
+                    if (
+                        e.type == ET.PART_OF
+                        and node_type == NT.GOAL
+                        and e.src == x
+                    ):
                         continue
                     nxt.add(other)
             frontier = nxt - seen
