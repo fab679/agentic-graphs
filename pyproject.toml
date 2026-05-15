@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentic-graphs"
-version = "0.2.0"
+version = "0.2.2"
 description = "Graph-native framework for building AI agents with FalkorDB persistence"
 readme = "README.md"
 requires-python = ">=3.10"
