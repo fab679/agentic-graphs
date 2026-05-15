@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv/
+
+# Local environment files
+.env
+uv.lock
+
+# Editor folders
+.vscode/
+.idea/
+
+# Test and coverage
+.pytest_cache/
+coverage.xml
+
+# OS files
+.DS_Store
