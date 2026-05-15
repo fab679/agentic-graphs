@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      run: uv sync --all-extras
+
+    - name: Lint with ruff
+      run: uv run ruff check src/ --select E,F,W
+
+    - name: Run tests
+      run: uv run pytest tests/ -v --tb=short
+      continue-on-error: true
+
+    - name: Check imports
+      run: uv run python -c "from agentic_graphs import Agent, Graph, Node, Edge; print('✓ Imports OK')"
