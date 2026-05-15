@@ -13,6 +13,7 @@ Public API:
     AzureOpenAILLM                  — Azure OpenAI     (pip install openai)
     LiteRTLLM                       — On-device LiteRT (pip install litert-lm)
     Agent                           — base agent class
+    LiteRTAgent                     — agent for LiteRT on-device inference
     run_scheduler, process_node     — functional scheduler
     collect_answer, set_sync_hook   — scheduler utilities
     FalkorDBBackend                 — FalkorDB persistence (fixed)
@@ -28,6 +29,7 @@ from agentic_graphs.core.falkordb_backend import FalkorDBBackend
 from agentic_graphs.llm.base import LLM
 from agentic_graphs.llm.openai import OpenAILLM
 from agentic_graphs.agent.base import Agent
+from agentic_graphs.agent.litert import LiteRTAgent
 from agentic_graphs.agent.scheduler import (
     run_scheduler, process_node, collect_answer, set_sync_hook,
 )
@@ -46,7 +48,7 @@ __all__ = [
     "AnthropicLLM", "GeminiLLM", "GroqLLM",
     "OllamaLLM", "AzureOpenAILLM", "LiteRTLLM",
     # agent
-    "Agent",
+    "Agent", "LiteRTAgent",
     # scheduler
     "run_scheduler", "process_node", "collect_answer", "set_sync_hook",
     # persistence

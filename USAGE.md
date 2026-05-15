@@ -142,6 +142,222 @@ Each node is stored in FalkorDB and queryable at http://localhost:3000.
 
 ---
 
+## Using Different LLM Providers
+
+Switch providers by importing the corresponding class. All providers share the same `LLM` interface, so your agent code stays the same — just swap the `llm=` argument.
+
+### OpenAI
+
+```python
+from agentic_graphs import OpenAILLM
+
+# Recommended models
+llm = OpenAILLM(model="gpt-4o-mini")           # Fast, cheap ($0.15/M tokens)
+llm = OpenAILLM(model="gpt-4o")                 # Strong reasoning
+llm = OpenAILLM(model="gpt-4-turbo")            # Legacy
+llm = OpenAILLM(model="o3")                          # o1/o3 reasoning models
+
+# Custom API key
+llm = OpenAILLM(model="gpt-4o-mini", api_key="sk-...")
+
+# Embeddings (used for semantic memory)
+embedding = await llm.embed("Your text here")
+```
+
+**Env:** `OPENAI_API_KEY`
+
+---
+
+### Anthropic (Claude)
+
+```python
+from agentic_graphs import AnthropicLLM
+
+llm = AnthropicLLM(model="claude-sonnet-4-20250514")   # Balanced (default)
+llm = AnthropicLLM(model="claude-opus-4-20250514")      # Max intelligence
+llm = AnthropicLLM(model="claude-haiku-3-5")            # Fast & cheap
+
+# Custom max tokens
+llm = AnthropicLLM(model="claude-sonnet-4-20250514", max_tokens=8192)
+```
+
+**Install:** `pip install anthropic`
+**Env:** `ANTHROPIC_API_KEY`
+
+---
+
+### Google Gemini
+
+```python
+from agentic_graphs import GeminiLLM
+
+llm = GeminiLLM(model="gemini-2.0-flash")        # Fast (default)
+llm = GeminiLLM(model="gemini-2.5-pro")           # Strong reasoning
+llm = GeminiLLM(model="gemini-1.5-pro")           # Legacy
+
+# Embeddings
+embedding = await llm.embed("Your text here")
+```
+
+**Install:** `pip install google-generativeai`
+**Env:** `GOOGLE_API_KEY`
+
+---
+
+### Groq (Fast Inference)
+
+```python
+from agentic_graphs import GroqLLM
+
+llm = GroqLLM(model="llama-3.3-70b-versatile")   # Default
+llm = GroqLLM(model="mixtral-8x7b-32768")
+llm = GroqLLM(model="gemma2-9b-it")
+```
+
+**Install:** `pip install groq`
+**Env:** `GROQ_API_KEY`
+
+---
+
+### Ollama (Local Models)
+
+```python
+from agentic_graphs import OllamaLLM
+
+# Make sure Ollama is running first:
+#   ollama serve
+#   ollama pull llama3.2
+
+llm = OllamaLLM(model="llama3.2")                # Default
+llm = OllamaLLM(model="mistral")
+llm = OllamaLLM(model="phi-3")
+llm = OllamaLLM(model="qwen2.5")
+
+# Custom Ollama host
+llm = OllamaLLM(model="llama3.2", base_url="http://192.168.1.100:11434")
+
+# Embeddings (uses the same model by default)
+embedding = await llm.embed("Your text here")
+```
+
+**Install:** `pip install httpx`
+**Env:** `OLLAMA_BASE_URL` (default: `http://localhost:11434`)
+
+---
+
+### Azure OpenAI
+
+```python
+from agentic_graphs import AzureOpenAILLM
+
+# Option A: environment variables
+llm = AzureOpenAILLM()
+
+# Option B: explicit config
+llm = AzureOpenAILLM(
+    deployment="my-gpt-4o-deployment",
+    api_key="...",
+    endpoint="https://my-resource.openai.azure.com/",
+    api_version="2024-12-01-preview",
+)
+```
+
+**Install:** `pip install openai`
+**Env:** `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_DEPLOYMENT`
+
+---
+
+### LiteRT-LM (Google — On-Device)
+
+Google's on-device inference runtime for **Gemma 4** models. Runs entirely locally with no API calls.
+
+```python
+from agentic_graphs import LiteRTLLM
+
+# Requires a downloaded .litertlm model file
+llm = LiteRTLLM(model_path="/path/to/gemma-4-E2B-it.litertlm/model.litertlm")
+
+# Adjust max tokens (default 2048)
+llm = LiteRTLLM(model_path="...", max_tokens=4096)
+```
+
+**Tool calling:** LiteRT supports native function calling via `Engine.create_conversation(tools=...)`. Use `LiteRTAgent` (instead of `Agent`) to automatically forward all tool implementations (built-in graph mutation tools + your tools) to the SDK:
+
+```python
+from agentic_graphs import LiteRTAgent, LiteRTLLM, tool
+
+@tool
+def add(a: float, b: float) -> float:
+    """Add two numbers."""
+    return a + b
+
+llm = LiteRTLLM(
+    model_path="...",
+    tool_registry={"add": add},
+)
+
+agent = LiteRTAgent(
+    llm, "What is 2 + 3?",
+    extra_action_tools={"add": add},
+    extra_action_schemas=[add.schema],
+)
+result = await agent.run()
+```
+
+Tool calls are logged to stdout and persisted to FalkorDB as TOOLCALL nodes when a backend is attached.
+
+**Prerequisites:**
+1. Download a Gemma 4 `.litertlm` model (e.g., from Hugging Face or Google)
+2. Install the SDK: `pip install 'litert-lm>=0.11.0'`
+
+**Install:** `pip install 'litert-lm>=0.11.0'` (also in `agentic-graphs[litert]`)
+**Env:** `MODEL_PATH`
+
+**Example:** See [`litert_math_agent.py`](src/agentic_graphs/examples/litert_math_agent.py) for a full math agent with tool calling and FalkorDB visualization.
+
+> **Note:** The LiteRT Engine only supports one conversation session at a time. `LiteRTLLM` serializes concurrent `generate()` calls with a lock. A tool-call limit (20 per conversation) prevents runaway loops on complex problems.
+
+---
+
+### Quick Reference
+
+| Provider | Import | Install | Env Key |
+|----------|--------|---------|---------|
+| OpenAI | `OpenAILLM` | built-in | `OPENAI_API_KEY` |
+| Anthropic | `AnthropicLLM` | `pip install anthropic` | `ANTHROPIC_API_KEY` |
+| Gemini | `GeminiLLM` | `pip install google-generativeai` | `GOOGLE_API_KEY` |
+| Groq | `GroqLLM` | `pip install groq` | `GROQ_API_KEY` |
+| Ollama | `OllamaLLM` | `pip install httpx` | `OLLAMA_BASE_URL` |
+| Azure OpenAI | `AzureOpenAILLM` | `pip install openai` | `AZURE_OPENAI_*` |
+| LiteRT | `LiteRTLLM` | `pip install litert-lm` | `MODEL_PATH` |
+
+### Common Usage
+
+All providers work identically with agents:
+
+```python
+from agentic_graphs import Agent, OpenAILLM  # or AnthropicLLM, GeminiLLM, etc.
+
+llm = OpenAILLM(model="gpt-4o-mini")
+agent = Agent(llm, "What is the capital of France?")
+result = await agent.run()
+```
+
+### Optional Dependencies
+
+```bash
+# Install all providers at once
+pip install agentic-graphs[all]
+
+# Or individual groups
+pip install agentic-graphs[anthropic]
+pip install agentic-graphs[gemini]
+pip install agentic-graphs[groq]
+pip install agentic-graphs[ollama]
+```
+
+---
+
 ## Custom Tools
 
 ### Add Tools to Your Agent

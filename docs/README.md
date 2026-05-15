@@ -22,6 +22,9 @@ uv run python -m agentic_graphs.examples.skill_learning_demo
 
 # Deep memory test — 8/8 verification of triplet + skill storage
 uv run python -m agentic_graphs.examples.deep_memory_test
+
+# LiteRT math agent — on-device Gemma 4 with tool calling
+uv run python -m agentic_graphs.examples.litert_math_agent "What is 2 + 3?"
 ```
 
 ## Architecture
@@ -61,3 +64,4 @@ FalkorDB-backed with three graph families:
 | `agentic_memory_demo` | Triplet memory + cross-session recall |
 | `skill_learning_demo` | Agent creates/reuses learned skills |
 | `deep_memory_test` | Full 8/8 verification of memory storage |
+| `litert_math_agent` | On-device Gemma 4 math with tool calling |
