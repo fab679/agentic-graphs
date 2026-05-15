@@ -31,9 +31,9 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/yourusername/agentic-graphs"
-Documentation = "https://github.com/yourusername/agentic-graphs#readme"
-BugTracker = "https://github.com/yourusername/agentic-graphs/issues"
+Repository = "https://github.com/fab679/agentic-graphs"
+Documentation = "https://github.com/fab679/agentic-graphs#readme"
+BugTracker = "https://github.com/fab679/agentic-graphs/issues"
 
 [project.optional-dependencies]
 anthropic  = ["anthropic>=0.40.0"]
